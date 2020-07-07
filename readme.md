@@ -7,6 +7,11 @@
   - A home linsting list messages;
   - It is possible to vote on messages so that they gain prominence;
 
+<p align="center">
+<img src="./demo/demo1.gif" alt="demo1" title="demo1">
+<img src="./demo/demo2.gif" alt="demo1" title="demo2">
+</p>
+
 ## 💻  Note.
 
   - it is necessary to inform that the application was developed in 
