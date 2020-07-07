@@ -9,7 +9,7 @@ describe('New message, items', () => {
   it('should contains message inputs', async () => {
     const { getByPlaceholder } = render(<NewMessage />)
 
-    expect(getByPlaceholder('digite a nova mensagem...')).toBeTruthy();
+    expect(getByPlaceholder('mensagem...')).toBeTruthy();
   })
 })
 describe('New message, post', () => {

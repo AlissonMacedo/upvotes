@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, TouchableOpacity, Button } from 'react-native';
+import { View, Text, TouchableOpacity, Button, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -23,13 +23,18 @@ function Routes() {
           name="Home"
           component={Home}
           options={({ navigation, route }) => ({
-            headerTitle: props => <Text>Home</Text>,
+            headerTitle: props => <View style={styles.ViewText}>
+              <Text style={styles.TextHeader}>Home</Text>
+            </View>,
             headerRight: () => (
-              <Button
-                onPress={() => navigation.navigate('NewMessage')}
-                title="Novo"
-                color="#333"
-              />
+              <View style={styles.ViewButton}>
+                <Button
+                  style={{ margin: 10 }}
+                  onPress={() => navigation.navigate('NewMessage')}
+                  title="Novo"
+                  color="#333"
+                />
+              </View>
             ),
           })
           }
@@ -38,5 +43,19 @@ function Routes() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  ViewButton: {
+    marginRight: 10,
+  },
+  ViewText: {
+    flex: 1,
+  },
+  TextHeader: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000'
+  }
+})
 
 export default Routes;

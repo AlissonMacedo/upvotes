@@ -1,9 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import api from '../../services/api'
 
+import * as Yup from 'yup';
+import getValidationErrors from '../../utils/getValidationErrors'
 
 import Button from '../../components/Button'
 import Input from '../../components/Input'
@@ -18,68 +20,80 @@ export default function Login({ navigation }) {
   const [password, setPassword] = useState()
 
 
-  async function CreateLogin() {
-    const userAndPass =
-    {
-      "username": `${user}`,
-      "password": `${password}`
+  const handleSignUp = useCallback(async (data) => {
+    try {
+      formRef.current.setErrors({});
+
+      const schema = Yup.object().shape({
+        username: Yup.string().required('O nome é obrigatório'),
+        password: Yup.string().required('A senha é obrigatória')
+      })
+
+      await schema.validate(data, { abortEarly: false })
+
+      const response = await api.post('sign-up', data)
+
+      Alert.alert('Tudo certo!', 'Usuário cadastrado com sucesso!')
+      navigation.goBack()
+
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        console.log(err)
+        const errors = getValidationErrors(err);
+
+        formRef.current.setErrors(errors);
+
+        return;
+      }
+
+      Alert.alert('Erro no registro', 'Ocorreu um erro ao fazer o registro!')
     }
-    const response = await api.post('sign-up', userAndPass)
-    console.log(response)
 
-    if (response.status === 200) {
-
-      Alert.alert('Usuário cadastrado com sucesso!')
-      navigation.navigate('Login')
-    } else {
-
-      'Houve um erro ao fazer o cadastro'
-    }
-  }
+  }, [])
 
 
   return (
-    <View style={styles.master}>
-      <StatusBar style="auto" />
-      <View style={styles.center}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : null} style={styles.master}>
+      <StatusBar barStyle="light-content" backgroundColor="#888" />
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flex: 1 }}>
 
-        {loading ? <ActivityIndicator size={50} /> :
-          <View>
-            <View style={styles.ViewLogin}>
-              <Text style={styles.TextButtonLoginTitle}>Novo usuário</Text>
-            </View>
-            <Form ref={formRef} onSubmit={(data) => { console.log(data) }}>
-              <Input
-                autoCapitalize="none"
-                autoCorrect={false}
-                name="name"
-                placeholder="usuário"
-                ico="account"
-                onSubmitEditing={() => { passwordInputRef.current?.focus() }}
-              />
 
-              <Input
-                ref={passwordInputRef}
-                autoCapitalize="none"
-                autoCorrect={false}
-                name="password"
-                ico="onepassword"
-                placeholder="senha..."
-                textContentType="newPassword"
-              />
+        <View style={styles.center}>
+          <View style={styles.ViewLogin}>
+            <Text style={styles.TextButtonLoginTitle}>Novo usuário</Text>
+          </View>
+          <Form ref={formRef} onSubmit={handleSignUp}>
+            <Input
+              autoCapitalize="none"
+              autoCorrect={false}
+              name="username"
+              placeholder="usuário"
+              ico="account"
+              onSubmitEditing={() => { passwordInputRef.current?.focus() }}
+            />
 
-              <Button loading={loading} color="#7159c1" onPress={() => formRef.current.submitForm()}>
-                Cadastrar
+            <Input
+              ref={passwordInputRef}
+              autoCapitalize="none"
+              autoCorrect={false}
+              name="password"
+              ico="onepassword"
+              placeholder="senha..."
+              textContentType="newPassword"
+            />
+
+            <Button loading={loading} color="#7159c1" onPress={() => formRef.current.submitForm()}>
+              Cadastrar
             </Button>
 
-            </Form>
+          </Form>
 
-          </View>
-        }
+        </View>
 
-      </View>
 
-    </View>
+      </ScrollView>
+
+    </KeyboardAvoidingView>
   );
 }
 

@@ -24,6 +24,7 @@ describe('SignIn page', () => {
       "password": `${password}`
     }
 
+
     const response = await api.post('sign-in', userToSend)
 
     expect(response.status).toEqual(200);

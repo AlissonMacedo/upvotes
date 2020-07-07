@@ -48,7 +48,7 @@ function Input({ name, ico, placeholder, ...rest }, ref) {
 
   return (
     <>
-      <Container isFocused={isFocused} >
+      <Container isFocused={isFocused} isErrored={!!error} >
         {ico && <MaterialCommunityIcons name={ico} size={24} color={isFocused || isFilled ? '#7159c1' : '#666360'} />}
 
         <TextInput

@@ -1,60 +1,55 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import api from '../../services/api'
 
+import { Form } from '@unform/mobile';
+import { FormHandles } from '@unform/core';
+
+import * as Yup from 'yup'
+import getValidationErrors from '../../utils/getValidationErrors'
+
+import Input from '../../components/Input'
+import Button from '../../components/Button'
 
 export default function Login({ navigation }) {
+  const formRef = useRef(null);
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState()
 
-  async function postMessage() {
-    const messageToSend =
-    {
-      "content": `${message}`,
-    }
-    const response = await api.post('feed', messageToSend)
-    console.log(response)
 
-    if (response.status === 201) {
+  const postMessage = useCallback(async (data) => {
+    try {
+      formRef.current.setErrors({});
+
+      const schema = Yup.object().shape({
+        content: Yup.string().required('A mensagem é obrigatória'),
+
+      })
+
+      await schema.validate(data, { abortEarly: false })
+
+      const response = await api.post('feed', data)
+      console.log(data)
+
 
       Alert.alert('Mensagem postada com sucesso!')
       navigation.navigate('Home')
-    } else {
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        console.log(err)
+        const errors = getValidationErrors(err);
 
-      'Houve um erro ao postar sua mensagem'
+        formRef.current.setErrors(errors);
+
+        return;
+      }
+
+      Alert.alert('Erro no envio', 'Ocorreu um erro ao enviar a mensagem!')
     }
-  }
 
-  async function sendMessage() {
-
-    Alert.alert(
-      "Atenção",
-      `Confirma o envio da messagem? ${message}`,
-      [
-        {
-          text: "Cancel",
-          onPress: () => console.log("Cancel Pressed"),
-          style: "cancel"
-        },
-        { text: "OK", onPress: () => postMessage() }
-      ],
-      { cancelable: false }
-    );
-
-    // const response = await api.post('sign-in', user)
-
-    // if (response.status !== 200) {
-    //   Alert.alert('Houve um erro no login!')
-    // }
-    // api.defaults.headers.Authorization = `Bearer ${response.data}`;
-
-    // navigation.navigate('Home')
-
-  }
-
-
+  }, [])
 
   return (
     <View style={styles.master}>
@@ -66,14 +61,21 @@ export default function Login({ navigation }) {
             <View style={styles.ViewLogin}>
               <Text style={styles.TextButtonLoginTitle}>Nova Mensagem</Text>
             </View>
-            <View style={styles.InputView}>
-              <Feather name="users" size={24} color="white" />
-              <TextInput style={styles.Input} placeholder="digite a nova mensagem..." onChangeText={text => setMessage(text)} />
-            </View>
+            <Form ref={formRef} onSubmit={postMessage}>
+              <Input
+                autoCapitalize="none"
+                autoCorrect={false}
+                name="content"
+                placeholder="mensagem..."
+                ico="android-messages"
+                returnKeyType="next"
+                nSubmitEditing={() => { formRef.current.submitForm() }}
+              />
 
-            <TouchableOpacity style={styles.ButtonLogin} onPress={() => sendMessage()}>
-              <Text style={styles.TextButtonLogin}>Enviar</Text>
-            </TouchableOpacity>
+              <Button loading={loading} color="#7159c1" onPress={() => formRef.current.submitForm()}>
+                Enviar
+              </Button>
+            </Form>
 
           </View>
         }

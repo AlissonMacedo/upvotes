@@ -17,7 +17,7 @@ import { FormHandles } from '@unform/core';
 import Button from '../../components/Button'
 import Input from '../../components/Input'
 
-
+import getValidationErrors from '../../utils/getValidationErrors'
 import api from '../../services/api'
 
 
@@ -29,54 +29,38 @@ export default function Login({ navigation }) {
   const [password, setPassword] = useState()
   const [error, setError] = useState(false);
 
-  const handleSignIn = useCallback((data) => {
-    console.log(data)
-  }, [])
-
-
-  async function handleSubmit(data, { reset }) {
+  const handleSignIn = useCallback(async (data) => {
     try {
+      formRef.current.setErrors({});
+
       const schema = Yup.object().shape({
-        name: Yup.string().required('O nome é obrigatório'),
+        username: Yup.string().required('O nome é obrigatório'),
         password: Yup.string().required('A senha é obrigatória')
       })
 
       await schema.validate(data, { abortEarly: false })
 
-      console.log(data);
+      const response = await api.post('sign-in', data)
 
-      reset();
-
-      const userToSend = {
-        "username": `${user}`,
-        "password": `${password}`
-      }
-
-      const response = await api.post('sign-in', userToSend)
-
-      console.log(userToSend)
-      if (response.status !== 200) {
-        Alert.alert('Houve um erro no login!')
-      }
       api.defaults.headers.Authorization = `Bearer ${response.data}`;
 
       navigation.navigate('Home')
+
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         console.log(err)
-        const errorMessages = {};
+        const errors = getValidationErrors(err);
 
-        err.inner.forEach(error => {
-          errorMessages[error.path] = error.message;
-        })
+        formRef.current.setErrors(errors);
 
-        formRef.current.setErrors(errorMessages);
+        return;
       }
 
+      Alert.alert('Erro na atutenticação', 'Ocorreu um erro ao fazer login!')
     }
 
+  }, [])
 
-  }
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : null} style={styles.master}>
@@ -92,7 +76,7 @@ export default function Login({ navigation }) {
               <Input
                 autoCapitalize="none"
                 autoCorrect={false}
-                name="name"
+                name="username"
                 placeholder="usuário"
                 ico="account"
                 returnKeyType="next"
