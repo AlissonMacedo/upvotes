@@ -7,6 +7,8 @@
     "version": "1.0.0",
     "assetBundlePatterns": [
       "**/*"
-    ]
+    ],
+    "description": "- This app was developed to challenge Segware.",
+    "githubUrl": "https://github.com/AlissonMacedo/upvotes"
   }
 }

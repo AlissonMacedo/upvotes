@@ -1,13 +1,21 @@
 
-import styled from 'styled-components/native';
+import styled, { css } from 'styled-components/native';
 
 export const Container = styled.View`
-  padding: 0 15px;
-  height: 46px;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  flex-direction: row;
-  align-items: center;
+    flex-direction: row;
+    align-items: center;
+    background: #232129;
+    width: 330px;
+    height: 60px;
+    border-color: #232129; 
+    border-width: 2px;
+    border-radius: 6px;
+    padding: 10px 15px;
+    margin: 10px;
+
+    ${props => props.isFocused && css`
+    border-color: #7159c1; 
+    `};
 `;
 
 export const TextInput = styled.TextInput.attrs({

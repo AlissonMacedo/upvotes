@@ -1,45 +1,70 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useImperativeHandle, forwardRef, useState, useCallback } from 'react';
 import { Text, TextInput, StyleSheet, View } from 'react-native';
 import { useField } from '@unform/core';
 
 import { MaterialCommunityIcons, } from '@expo/vector-icons';
+import { Container } from './styles'
 
-function Input({ name, ico, placeholder, ...rest }) {
-  const inputRef = useRef(null);
+function Input({ name, ico, placeholder, ...rest }, ref) {
+  const inputElementRef = useRef(null)
+
   const { fieldName, registerField, defaultValue = '', error } = useField(name);
+  const inputValueRef = useRef({ value: defaultValue });
+
+  const [isFocused, setIsFocused] = useState(false);
+  const [isFilled, setIsFilled] = useState(false);
+
+  const handleInputFocus = useCallback(() => {
+    setIsFocused(true);
+  }, []);
+
+  const handleInputBlur = useCallback(() => {
+    setIsFocused(false);
+
+    setIsFilled(!!inputValueRef.current.value)
+  }, []);
 
   useEffect(() => {
     registerField({
       name: fieldName,
-      ref: inputRef.current,
-      path: '_lastNativeText',
-      getValue(ref) {
-        return ref._lastNativeText || '';
-      },
+      ref: inputValueRef.current,
+      path: 'value',
       setValue(ref, value) {
-        ref.setNativeProps({ text: value });
-        ref._lastNativeText = value;
+        inputValueRef.current.value = value;
+        inputElementRef.current.setNativeProps({ text: value })
       },
-      clearValue(ref) {
-        ref.setNativeProps({ text: '' });
-        ref._lastNativeText = '';
-      }
-    })
+      clearValue() {
+        inputValueRef.current.value = '';
+        inputElementRef.current.clear();
+      },
+    });
   }, [fieldName, registerField]);
+
+  useImperativeHandle(ref, () => ({
+    focus() {
+      inputElementRef.current.focus()
+    }
+  }))
 
   return (
     <>
-      <View style={styles.InputView}>
-        {ico && <MaterialCommunityIcons name={ico} size={24} color="white" />}
+      <Container isFocused={isFocused} >
+        {ico && <MaterialCommunityIcons name={ico} size={24} color={isFocused || isFilled ? '#7159c1' : '#666360'} />}
 
         <TextInput
+          ref={inputElementRef}
           style={styles.Input}
+          keyboardAppearance="dark"
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          placeholderTextColor="#666360"
           placeholder={placeholder}
-          ref={inputRef}
           defaultValue={defaultValue}
+          onChangeText={(value) => { inputValueRef.current.value = value }}
+
           {...rest}
         />
-      </View>
+      </Container>
     </>
   );
 }
@@ -73,4 +98,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Input;
+export default forwardRef(Input);

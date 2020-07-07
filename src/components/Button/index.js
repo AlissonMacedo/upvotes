@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Text } from 'react-native';
+import { ActivityIndicator, Text, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 import { Container } from './styles';
 
@@ -9,7 +9,7 @@ export default function Button({ children, color, loading, ...rest }) {
       {loading ? (
         <ActivityIndicator size="small" color="#fff" />
       ) : (
-          <Text>{children}</Text>
+          <Text style={styles.TextButtonLoginTitle}>{children}</Text>
         )}
     </Container>
   );
@@ -25,3 +25,12 @@ Button.defaultProps = {
   color: undefined,
   loading: false,
 };
+
+
+const styles = StyleSheet.create({
+  TextButtonLoginTitle: {
+    color: '#fff',
+    fontSize: 25,
+    fontWeight: 'bold'
+  },
+});

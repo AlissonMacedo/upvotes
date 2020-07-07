@@ -1,17 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   StyleSheet, Text, View, TextInput,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  ScrollView
 } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Yup from 'yup'
 import { Form } from '@unform/mobile';
-import { Scope } from '@unform/core';
+import { FormHandles } from '@unform/core';
 
 import Button from '../../components/Button'
 import Input from '../../components/Input'
@@ -22,10 +23,15 @@ import api from '../../services/api'
 
 export default function Login({ navigation }) {
   const formRef = useRef(null);
+  const passwordInputRef = useRef(null)
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState()
   const [password, setPassword] = useState()
   const [error, setError] = useState(false);
+
+  const handleSignIn = useCallback((data) => {
+    console.log(data)
+  }, [])
 
 
   async function handleSubmit(data, { reset }) {
@@ -39,7 +45,22 @@ export default function Login({ navigation }) {
 
       console.log(data);
 
-      // reset();
+      reset();
+
+      const userToSend = {
+        "username": `${user}`,
+        "password": `${password}`
+      }
+
+      const response = await api.post('sign-in', userToSend)
+
+      console.log(userToSend)
+      if (response.status !== 200) {
+        Alert.alert('Houve um erro no login!')
+      }
+      api.defaults.headers.Authorization = `Bearer ${response.data}`;
+
+      navigation.navigate('Home')
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         console.log(err)
@@ -53,48 +74,53 @@ export default function Login({ navigation }) {
       }
 
     }
-    // const userToSend = {
-    //   "username": `${user}`,
-    //   "password": `${password}`
-    // }
 
-    // const response = await api.post('sign-in', userToSend)
-
-    // console.log(userToSend)
-    // if (response.status !== 200) {
-    //   Alert.alert('Houve um erro no login!')
-    // }
-    // api.defaults.headers.Authorization = `Bearer ${response.data}`;
-
-    // navigation.navigate('Home')
 
   }
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : null} style={styles.master}>
       <StatusBar barStyle="light-content" backgroundColor="#888" />
-      <View style={styles.center}>
-        <View>
-          <View style={styles.ViewLogin}>
-            <Text style={styles.TextButtonLoginTitle}>Log in</Text>
-          </View>
-          <Form ref={formRef} onSubmit={handleSubmit}>
-
-            <Input name="name" placeholder="usuário" ico="account" />
-
-            <Input name="password" ico="onepassword" placeholder="senha..." />
-
-            <Button loading={loading} onPress={() => formRef.current.submitForm()}>
-              Faça Login
-            </Button>
-
-            <View style={styles.ViewTextSubLogin}>
-              <Text style={styles.TextSubLogin}>Ainda não tem uma conta?</Text>
-              <Text style={styles.TextSubLoginNegrito} onPress={() => navigation.navigate('Register')} > Click Aqui</Text>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flex: 1 }}>
+        <View style={styles.center}>
+          <View>
+            <View style={styles.ViewLogin}>
+              <Text style={styles.TextButtonLoginTitle}>Log in</Text>
             </View>
-          </Form>
+            <Form ref={formRef} onSubmit={handleSignIn}>
+
+              <Input
+                autoCapitalize="none"
+                autoCorrect={false}
+                name="name"
+                placeholder="usuário"
+                ico="account"
+                returnKeyType="next"
+                onSubmitEditing={() => { passwordInputRef.current?.focus() }}
+              />
+
+              <Input
+                ref={passwordInputRef}
+                secureTextEntry
+                name="password"
+                ico="onepassword"
+                placeholder="senha..."
+                returnKeyType="send"
+                onSubmitEditing={() => { formRef.current.submitForm() }}
+              />
+
+              <Button loading={loading} color="#7159c1" onPress={() => formRef.current.submitForm()}>
+                Faça Login
+              </Button>
+
+              <View style={styles.ViewTextSubLogin}>
+                <Text style={styles.TextSubLogin}>Ainda não tem uma conta?</Text>
+                <Text style={styles.TextSubLoginNegrito} onPress={() => navigation.navigate('Register')} > Click Aqui</Text>
+              </View>
+            </Form>
+          </View>
         </View>
-      </View>
+      </ScrollView>
 
     </KeyboardAvoidingView>
   );
@@ -138,7 +164,7 @@ const styles = StyleSheet.create({
     fontWeight: "normal"
   },
   TextSubLoginNegrito: {
-    color: '#fff',
+    color: '#7159c1',
     fontSize: 15,
     fontWeight: 'bold'
   },
