@@ -3,11 +3,13 @@ import { View, Text, TouchableOpacity, Button } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import Login from './pages/login/login';
-import Register from './pages/register'
 
-import Home from './pages/home';
-import NewMessage from './pages/newMessage';
+import Login from './pages/login/login';
+import Register from './pages/register/register'
+
+import Home from './pages/home/home';
+import NewMessage from './pages/newMessage/newMessage';
+
 const Stack = createStackNavigator();
 
 function Routes() {

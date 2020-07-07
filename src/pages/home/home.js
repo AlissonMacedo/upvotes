@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, FlatList, Alert } from 'react-native';
 import { Feather, MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
-import api from '../services/api'
+import api from '../../services/api'
 
 export default function Home() {
   const [loading, setLoading] = useState(false)
